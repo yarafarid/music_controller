@@ -25,7 +25,9 @@ class GetRoom(APIView):
         if code != None:
             room = Room.objects.filter(code=code)
             if len(room) > 0:  # check if the room exists
-                data = RoomSerializer(room[0]).data
+                data = RoomSerializer(
+                    room[0]
+                ).data  # this var contains data of the room in json
                 data["is_host"] = (
                     self.request.session.session_key == room[0].host
                 )  # make a new key in the data dictionary called is_host and set it to true if the session key is equal to the host of the room

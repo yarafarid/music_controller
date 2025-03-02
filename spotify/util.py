@@ -76,3 +76,23 @@ def refresh_spotify_token(session_id):
     update_or_create_user_tokens(
         session_id, access_token, token_type, expires_in, refresh_token
     )
+
+
+# function to handle sending any type of request to spotify:
+def execute_spotify_api_request(session_id, endpoint, post_=False, put_=False):
+    tokens = get_user_tokens(session_id)
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + tokens.access_token,
+    }
+
+    if post_:
+        post(BASE_URL + endpoint, headers=headers)
+    if put_:
+        put(BASE_URL + endpoint, headers=headers)
+    response = get(BASE_URL + endpoint, {}, headers=headers)
+    try:
+        return response.json()
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"Error": str(e)}

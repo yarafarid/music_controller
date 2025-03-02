@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Component } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Typography } from "@mui/material";
 import Grid from "@material-ui/core/Grid";
 import CreateRoomPage from "./CreateRoomPage";
+import MusicPlayer from "./MusicPlayer";
 const Room = ({ leaveRoomCallback }) => {
   const [votesToSkip, setVotesToSkip] = useState(2);
   const [guestCanPause, setGuestCanPause] = useState(false);
@@ -11,6 +12,7 @@ const Room = ({ leaveRoomCallback }) => {
   const { roomCode } = useParams();
   const navigate = useNavigate();
   const [spotifyAuthenticated, setSpotifyAuthenticated] = useState(false);
+  const [song, setSong] = useState({}); // to store all infomration related to the current song
   useEffect(() => {
     getRoomDetails();
   }, []);
@@ -19,6 +21,13 @@ const Room = ({ leaveRoomCallback }) => {
       authenticateSpotify();
     }
   }, [isHost]);
+  useEffect(() => {
+    getCurrentSong();
+  }, []);
+  useEffect(() => {
+    const interval = setInterval(getCurrentSong, 1000);
+    return () => clearInterval(interval);
+  }, []);
   const getRoomDetails = () => {
     fetch("/api/get-room" + "?code=" + roomCode) // in this line, we are sending a GET request to the backend to get the room details
       .then((response) => {
@@ -46,6 +55,20 @@ const Room = ({ leaveRoomCallback }) => {
               window.location.replace(data.url);
             });
         }
+      });
+  };
+  const getCurrentSong = () => {
+    fetch("/spotify/current-song")
+      .then((response) => {
+        if (!response.ok || response.status === 204) {
+          return {};
+        } else {
+          return response.json();
+        }
+      })
+      .then((data) => {
+        setSong(data);
+        console.log(data);
       });
   };
   const leaveButtonPressed = () => {
@@ -110,21 +133,7 @@ const Room = ({ leaveRoomCallback }) => {
           Code: {roomCode}
         </Typography>
       </Grid>
-      <Grid item xs={12} align="center">
-        <Typography variant="h6" compact="h6">
-          Votes: {votesToSkip}
-        </Typography>
-      </Grid>
-      <Grid item xs={12} align="center">
-        <Typography variant="h6" compact="h6">
-          Guest Can Pause: {guestCanPause.toString()}
-        </Typography>
-      </Grid>
-      <Grid item xs={12} align="center">
-        <Typography variant="h6" compact="h6">
-          Host: {isHost.toString()}
-        </Typography>
-      </Grid>
+      <MusicPlayer {...song} />
       {isHost ? renderSettingButton() : null}
       <Grid item xs={12} align="center">
         <Button
