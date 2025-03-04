@@ -1,4 +1,4 @@
-# Music Controller \U0001F3B5  
+# Music Controller 
 *A collaborative music room application with Spotify integration*
 
 ## Table of Contents  
